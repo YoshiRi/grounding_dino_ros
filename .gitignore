@@ -1,0 +1,13 @@
+# VSCode
+.vscode/
+
+# ROS 2
+build/
+install/
+log/
+__pycache__/
+*.pyc
+
+# Other temporary files
+*.swp
+*~
