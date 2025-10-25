@@ -4,6 +4,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from sensor_msgs.msg import Image
 from vision_msgs.msg import Detection2DArray
+from groundingdino.util.inference import load_model
 from cv_bridge import CvBridge
 
 
@@ -42,6 +43,17 @@ class GroundingDinoNode(Node):
         self.declare_parameter('box_threshold', 0.35)
         self.declare_parameter('text_threshold', 0.25)
         self.declare_parameter('device', 'cuda')
+
+        self.get_logger().info('Loading model...')
+        model_config_path = self.get_parameter('model_config_path').get_parameter_value().string_value
+        model_checkpoint_path = self.get_parameter('model_checkpoint_path').get_parameter_value().string_value
+        device = self.get_parameter('device').get_parameter_value().string_value
+
+        self.model = load_model(model_config_path, model_checkpoint_path)
+        self.model.to(device)
+        self.device = device
+
+        self.get_logger().info('Model loaded successfully.')
 
     def image_callback(self, msg: Image) -> None:
         pass
