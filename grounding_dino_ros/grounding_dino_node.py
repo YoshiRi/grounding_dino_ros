@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
+from rcl_interfaces.msg import ParameterDescriptor
 from sensor_msgs.msg import Image
 from vision_msgs.msg import Detection2DArray
 from cv_bridge import CvBridge
@@ -26,6 +27,21 @@ class GroundingDinoNode(Node):
             '~/output/image_processed',
             10,
         )
+
+        text_prompt_descriptor = ParameterDescriptor(
+            description='Text prompt describing objects to detect.',
+            read_only=False,
+        )
+        self.declare_parameter(
+            'text_prompt',
+            'a person . a chair',
+            text_prompt_descriptor,
+        )
+        self.declare_parameter('model_config_path', '')
+        self.declare_parameter('model_checkpoint_path', '')
+        self.declare_parameter('box_threshold', 0.35)
+        self.declare_parameter('text_threshold', 0.25)
+        self.declare_parameter('device', 'cuda')
 
     def image_callback(self, msg: Image) -> None:
         pass
