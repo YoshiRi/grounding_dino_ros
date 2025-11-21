@@ -4,7 +4,7 @@ from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from sensor_msgs.msg import Image
 from vision_msgs.msg import Detection2DArray
-from groundingdino.util.inference import load_model
+from groundingdino.util.inference import load_model, predict
 from cv_bridge import CvBridge
 
 
@@ -56,7 +56,27 @@ class GroundingDinoNode(Node):
         self.get_logger().info('Model loaded successfully.')
 
     def image_callback(self, msg: Image) -> None:
-        pass
+        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+
+        text_prompt = self.get_parameter('text_prompt').value
+
+        rgb_image = cv_image[:, :, ::-1]
+
+        box_threshold = self.get_parameter('box_threshold').value
+        text_threshold = self.get_parameter('text_threshold').value
+
+        boxes, logits, phrases = predict(
+            model=self.model,
+            image=rgb_image,
+            caption=text_prompt,
+            box_threshold=box_threshold,
+            text_threshold=text_threshold,
+            device=self.device,
+        )
+
+        self._last_boxes = boxes
+        self._last_logits = logits
+        self._last_phrases = phrases
 
 
 def main(args=None):
